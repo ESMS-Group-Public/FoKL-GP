@@ -1,0 +1,25 @@
+
+Gibbs sampler and automatic function builder based on BSS-ANOVA GPs
+
+The main routine is 'emulator' -- notes in the preamble to that function describe the inputs and outputs.
+
+The coefficients ('betas') and interaction matrix ('mtx') may be used directly within the main GP evaluation routine 'bss_eval'.
+
+The multiple-input, single-output GP functions are constructed through an unsupervised learning routine utilizing linear Bayesian inference through Gibbs sampling on a sequence of models. The Bayesian information criterion is used to track model fitness scores; the routine requires four increases in the BIC (the BIC optimum is a minimum) before model termination, at which point the optimum model is returned.
+
+There is a test case in the MATLAB workspace -- load the workspace and run it with
+
+[betas, mtx, evs] = emulator(0.009, [reshape(X, m*n,1) reshape(Y, m*n, 1)], reshape(DATA_nois, m*n, 1), phi2, 9, 0.01, 3, 4000, 1000);
+
+visualize it with
+
+coverage(betas, [reshape(X,m*n,1) reshape(Y,m*n,1)], reshape(DATA_nois,m*n,1), phi2, mtx, 100)
+
+change the inputs to see how various settings affect the routine !
+
+Two other notes: 
+
+1. The best basis functions are built with spline_coefficients.txt and 'splineconvert' -- read the coefficients in the file into a single matrix and pass that to the splineconvert routine.
+
+2. The constant term in the BSS-ANOVA expansion -- the one that doesn't depend on any input -- is returned in the last column of the matrix of coefficients. It should not be passed to bss_eval, but added in separately.
+
