@@ -102,6 +102,8 @@ while 1
         damtx = [damtx; vecs];
         
         [beters, ~, ~, ~, X, ev] = gibbs(inputs, data, phis, X, damtx, a, b, atau, btau, draws);
+
+        %betavs = [std(beters(ceil(draws/2+1),:))]
         
         if aic
             [dam, ~] = size(damtx);

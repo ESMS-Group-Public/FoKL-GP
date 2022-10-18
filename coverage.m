@@ -22,12 +22,12 @@ for i=1:n
     phind = ceil(normputs(i,:)*499);
     phind = phind + (phind == 0);
 
-    for j=1:mbets-1
+    for j=2:mbets
 
         phi = 1;
         for k=1:mputs
 
-            num = mtx(j,k);
+            num = mtx(j-1,k);
 
             if num
                 x = 499*normputs(i,k) - phind(k) + 1;
@@ -40,7 +40,7 @@ for i=1:n
     end
 end
 
-X(:,mbets) = ones(n,1);
+X(:,1) = ones(n,1);
 
 modells = zeros(length(data), draws);
 for i=1:draws

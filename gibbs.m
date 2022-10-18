@@ -31,9 +31,12 @@ function [betas, sigs, taus, betahat, X, ev] = gibbs(inputs, data, phis, Xin, di
 [minp, ninp] = size(inputs);
 
 [mmtx, ~] = size(discmtx);
+if isempty(Xin)
+    Xin = ones(minp,1);
+end
 [~, nxin] = size(Xin);
 
-X = [Xin zeros(minp, mmtx-nxin) ones(minp,1)]; % number of data points by number of terms in the function
+X = [Xin zeros(minp, mmtx-nxin)]; % number of data points by number of terms in the function
 %X(:,mmtx+1) = ones(minp,1); % representing the beta-naught term
 
 for i=1:minp
@@ -41,7 +44,7 @@ for i=1:minp
     phind = ceil(inputs(i,:)*499);
     phind = phind + (phind == 0);
     
-    for j=nxin+1:mmtx
+    for j=nxin:mmtx
         
         phi = 1;
         for k=1:ninp
@@ -54,7 +57,7 @@ for i=1:minp
             end
         end
         
-        X(i,j) = phi;
+        X(i,j+1) = phi;
         
     end
 end
@@ -117,7 +120,5 @@ end
 %% calculate the evidence
 
 ev = (mmtx+1)*log(n) - 2*max(lik);
-
-X = X(:,1:mmtx);
 
 end
