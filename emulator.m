@@ -1,5 +1,5 @@
 
-function [betas, mtx, evs] = emulator(inputs, data, phis, a, b, atau, btau, tolerance, draws, gimmie, way3, aic)
+function [betas, mtx, evs] = emulator(inputs, data, phis, relats_in, a, b, atau, btau, tolerance, draws, gimmie, way3, threshav, threshstda, threshstdb, aic)
 
 % this version uses the 'Xin' mode of the gibbs sampler
 
@@ -43,6 +43,8 @@ function [betas, mtx, evs] = emulator(inputs, data, phis, a, b, atau, btau, tole
 
 % 'way3' is a boolean for turning on or off 3-way interactions
 
+% 'thresh' is a threshold for proposing terms for elimination
+
 % 'aic' is a boolean specifying the use of the aikaike information
 % criterion
 
@@ -65,6 +67,47 @@ function [betas, mtx, evs] = emulator(inputs, data, phis, a, b, atau, btau, tole
 
 % 'n' is the number of datapoints whereas 'm' is the number of inputs
 [n, m] = size(inputs);
+
+if sum(~relats_in)
+    relats = zeros(sum(~relats_in),m);
+    ind = 1;
+    for i=1:m
+        if ~relats_in(i)
+            relats(ind,i) = 1;
+            ind = ind + 1;
+        end
+    end
+    ind_in = m+1;
+    for i=1:m-1
+        for j=i+1:m
+            if ~relats_in(ind_in)
+                relats(ind,i) = 1;
+                relats(ind,j) = 1;
+                ind = ind + 1;
+            end
+            ind_in = ind_in + 1;
+        end
+    end
+    ind_in = m + m*(m-1)/2 + 1;
+    if way3
+        for i=1:m-2
+            for j=i+1:m-1
+                for k=j+1:m
+                    if ~relats_in(ind_in)
+                        relats(ind,i) = 1;
+                        relats(ind,j) = 1;
+                        relats(ind,k) = 1;
+                        ind = ind + 1;
+                    end
+                    ind_in = ind_in + 1;
+                end
+            end
+        end
+    end
+end
+
+mrel = sum(~relats_in);
+
 damtx = [];
 evs = [];
 
@@ -98,31 +141,99 @@ while 1
     while 1
     
         vecs = uniqueperms(indvec);
+
+        [mvec, ~] = size(vecs);
+        killvecs = [];
+        if mrel ~= 0
+            for j = 1:mvec
+                testvec = vecs(j,:)./vecs(j,:);
+                testvec(isnan(testvec)) = 0;
+                for k=1:mrel
+                    if sum(testvec == relats(k,:)) == m
+                        killvecs = [killvecs j];
+                        break
+                    end
+                end
+            end
+            nuvecs = zeros(mvec-length(killvecs),m);
+            vecind = 1;
+            for j=1:mvec
+                if ~sum(j==killvecs)
+                    nuvecs(vecind,:) = vecs(j,:);
+                    vecind = vecind + 1;
+                end
+            end
+            vecs = nuvecs;
+        end
+
+        [vm, ~] = size(vecs);
         
         damtx = [damtx; vecs];
+        [dam, ~] = size(damtx);
         
-        [beters, ~, ~, ~, X, ev] = gibbs(inputs, data, phis, X, damtx, a, b, atau, btau, draws);
-
-        %betavs = [std(beters(ceil(draws/2+1),:))]
+        [beters, ~, ~, ~, Xers, ev] = gibbs(inputs, data, phis, X, damtx, a, b, atau, btau, draws);
         
         if aic
-            [dam, ~] = size(damtx);
-            ev = ev + (2 - log(n))*dam;
+            ev = ev + (2 - log(n))*(dam+1);
         end
-        
+
+        betavs = [abs(mean(beters(ceil(draws/2+1):draws,(dam-vm+2):(dam+1))))' (std(beters(ceil(draws/2+1):draws,(dam-vm+2):(dam+1)))./abs(mean(beters(ceil(draws/2+1):draws,(dam-vm+2):(dam+1)))))' ((dam-vm+2):(dam+1))'];
+        betavs = sortrows(betavs);
+
+        killset = [];
+        evmin = ev;
+        for i=1:vm%dam
+            if (betavs(i,2) > threshstda && betavs(i,1) < threshav*mean(abs(mean(beters(ceil(draws/2+1):draws))))) || (betavs(i,2) > threshstdb)
+            %if betavs(i,2) > threshstdb || (betavs(i,1) < threshav*mean(abs(mean(beters(ceil(draws/2+1):draws)))))
+            %if betavs(i,2) > betavs(i,1) || betavs(i,2) > threshstda
+                killtest = [killset betavs(i,3)-1];
+
+                damtx_test = damtx;
+                damtx_test(killtest, :) = [];
+
+                [damtest,~] = size(damtx_test);
+
+%                 Xin_test = X;
+%                 killXcol = [];
+%                 for ii=1:length(killtest)
+%                     if killtest(ii) <= dam-vm
+%                         killXcol = [killXcol (killtest(ii) + 1)];
+%                     end
+%                 end
+%                 Xin_test(:, killXcol) = [];
+
+                [betertest, ~, ~, ~, Xtest, evtest] = gibbs(inputs, data, phis, X, damtx_test, a, b, atau, btau, draws);
+                if aic
+                    evtest = evtest + (2 - log(n))*(damtest+1);
+                end
+                if evtest < evmin
+                    killset = killtest;
+                    evmin = evtest;
+                    Xers = Xtest;
+                    beters = betertest;
+                end
+            end
+        end
+
+        damtx(killset, :) = [];
+        ev = evmin;
+        X = Xers;
+
         disp([ind ev])
         
-        evs = [evs ev];
-        if ev == min(evs)
+        if ev < min(evs)
             
             betas = beters;
             mtx = damtx;
             greater = 1;
+            evs = [evs ev];
             
         elseif greater < tolerance
             greater = greater + 1;
+            evs = [evs ev];
         else
             finished = 1;
+            evs = [evs ev];
             break;
         end
         

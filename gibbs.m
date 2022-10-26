@@ -37,7 +37,6 @@ end
 [~, nxin] = size(Xin);
 
 X = [Xin zeros(minp, mmtx-nxin)]; % number of data points by number of terms in the function
-%X(:,mmtx+1) = ones(minp,1); % representing the beta-naught term
 
 for i=1:minp
     
@@ -75,7 +74,7 @@ Xty = X'*data;
 Lamb_inv = diag(1./diag(Lamb));
 
 betahat = Q*Lamb_inv*Q'*Xty;
-squerr = norm(data - X*betahat)^2;
+%squerr = norm(data - X*betahat)^2;
 
 astar = a + length(data)/2 + (mmtx + 1)/2;
 atau_star = atau + (mmtx+1)/2;
@@ -102,7 +101,7 @@ for k = 1:draws
     vec = normrnd(0,1,[mmtx+1,1]);
     betas(k,:) = (mun + sqrt(sigsqd)*S*vec)';
 
-    lik(k) = -(n/2)*log(sigsqd) - (squerr + (betahat' - betas(k,:))*XtX*(betahat - betas(k,:)'))/(2*sigsqd);
+    %lik(k) = -(n/2)*log(sigsqd) - (squerr + (betahat' - betas(k,:))*XtX*(betahat - betas(k,:)'))/(2*sigsqd);
     %lik(k) = -(n/2)*log(sigsqd) - norm(data - X*betas(k,:)')^2/(2*sigsqd);
     %evs(k) = sqrt(prod(diag(Lamb_tausqd)))/(2*pi*sigsqd)^(mmtx/2 + 0.5);
 
@@ -119,6 +118,8 @@ end
 
 %% calculate the evidence
 
+siglik = var(data - X*betahat);
+lik = -(n/2)*log(siglik) - (n-1)/2;
 ev = (mmtx+1)*log(n) - 2*max(lik);
 
 end
