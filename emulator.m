@@ -43,7 +43,19 @@ function [betas, mtx, evs] = emulator(inputs, data, phis, relats_in, a, b, atau,
 
 % 'way3' is a boolean for turning on or off 3-way interactions
 
-% 'thresh' is a threshold for proposing terms for elimination
+% 'threshav' is a threshold for proposing terms for elimination based on
+% their mean values (larger thresholds lead to more elimination)
+
+% 'threshstda' is a threshold standard deviation -- expressed as a fraction 
+% relative to the mean -- that pairs with 'threshav'.
+% terms with coefficients that are lower than 'threshav' and higher than
+% 'threshstda' will be proposed for elimination (elimination will happen or not 
+% based on relative BIC values)
+
+% 'threshstdb' is a threshold standard deviation that is independent of the
+% mean value of the coefficient -- all with a standard deviation (fraction 
+% relative to mean) exceeding
+% this value will be proposed for elimination
 
 % 'aic' is a boolean specifying the use of the aikaike information
 % criterion
