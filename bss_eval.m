@@ -43,11 +43,11 @@ for ii=1:mx
 
         end
 
-        delta(ii,:) = delta(ii,:) + phi*betas(:,i)';
+        delta(ii,:) = delta(ii,:) + phi*betas(:,i+1)';
 
     end
 
-    delta(ii,:) = delta(ii,:) + betas(:,m+1)';
+    delta(ii,:) = delta(ii,:) + betas(:,1)';
 
 end
 
