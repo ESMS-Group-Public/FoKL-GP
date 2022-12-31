@@ -14,6 +14,10 @@ The Bayesian information criterion (or Akaike) is used to track model fitness sc
 The routine requires a number of increases in the BIC (the BIC optimum is a minimum)
 before model termination, at which point the optimum model is returned.
 
+Integrated versions of ODE models are generated using the GP_Integrate function. This uses a 4th order Runge-Kutta method with fixed time step, and can handle an arbitrary number of models, inputs and forcing functions. Before using GP_Integrate models will need to be created of the derivatives using emulator. An example of generating, then integrating, these models can be found in GP_Integrate_Example, using a dynamic dataset concerning cascaded tanks from:
+
+Torbjorn Wigren and Johan Schoukens. Three free data sets for development and benchmarking in nonlinear system identification. In 2013 EUROPEAN CONTROL CONFERENCE (ECC), pages 2933–2938. European Control Assoc; IFAC; IEEE; CSS, 2013. ISBN 978-3-033-03962-9. European Control Conference (ECC), ETH Zurich, Zurich, SWITZERLAND, JUL 17-19, 2013.
+
 There is a test case in the MATLAB workspace in the folder. Load the workspace and run 'emulator' with
 
 [betas, mtx, evs] = emulator([reshape(X, m*n,1) reshape(Y, m*n, 1)], reshape(DATA_nois, m*n, 1), phi, [], 9, 0.01, 3, 4000, 4, 2000, 0, 0, 0.01, 0.5, 2, 1);
