@@ -21,6 +21,10 @@ function [betas, mtx, evs] = emulator(inputs, data, phis, relats_in, a, b, atau,
 % 25 basis functions: enough for most things -- while the latter provides
 % 500: definitely enough for anything)
 
+% 'relats_in' is the output from 'varselect_thermo', which performs
+% up-front variable selection for tasks with large input spaces. if there
+% is no such output use empty brackets []
+
 % 'a' and 'b' are the shape and scale parameters of the ig distribution for the
 % observation error variance of the data. the observation error model is white noise
 % choose the mode of the ig distribution to match the noise in the output dataset
