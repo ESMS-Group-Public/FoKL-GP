@@ -104,9 +104,8 @@ for k = 1:draws
     %lik(k) = -(n/2)*log(sigsqd) - (squerr + (betahat' - betas(k,:))*XtX*(betahat - betas(k,:)'))/(2*sigsqd);
     %lik(k) = -(n/2)*log(sigsqd) - norm(data - X*betas(k,:)')^2/(2*sigsqd);
     %evs(k) = sqrt(prod(diag(Lamb_tausqd)))/(2*pi*sigsqd)^(mmtx/2 + 0.5);
-
-    vecc = mun - betas(k,:)';    
-    bstar = b + 0.5*vecc'*((XtX + (1/tausqd)*eye(mmtx+1))*vecc) + 0.5*dtd - 0.5*mun'*Xty;
+  
+    bstar = b + 0.5*(betas(k,:)*XtX*betas(k,:)' - 2*betas(k,:)*Xty + dtd + betas(k,:)*betas(k,:)'/tausqd);
     sigsqd = 1/gamrnd(astar, 1/bstar);
     
     sigs(k) = sigsqd;
