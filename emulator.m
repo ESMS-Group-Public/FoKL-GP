@@ -237,8 +237,13 @@ while 1
 
         disp([ind ev])
         
-        if ev < min(evs)
+        if isempty(evs)
+            betas = beters;
+            mtx = damtx;
+            greater = 1;
+            evs = [evs ev];
             
+        elseif ev < min(evs)
             betas = beters;
             mtx = damtx;
             greater = 1;
