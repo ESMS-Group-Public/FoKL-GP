@@ -4,7 +4,7 @@ function delta = bss_eval(x, betas, phis, mtx)
 % x are normalized inputs -- rows experiments & columns variables
 
 % betas are coefficients -- columns correspond to terms in the model (rows
-% in mtx) and rows to different draws (different models). the last column
+% in mtx) and rows to different draws (different models). the first column
 % is the beta-naught (constant) term
 
 % phis are the spline coefficients for the basis functions (cell array)
