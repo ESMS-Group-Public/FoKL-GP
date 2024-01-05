@@ -60,12 +60,17 @@ for ii=1:mx
             if num
                 derp = derv(j);
                 if derp == 0
-                    phi = phi*(phis{num}.zero(phind(ii,j)) + phis{num}.one(phind(ii,j))*X(ii,j) + phis{num}.two(phind(ii,j))*X(ii,j)^2 + phis{num}.three(phind(ii,j))*X(ii,j)^3);
+                    phi = phi*(phis{num}.zero(phind(ii,j)) + phis{num}.one(phind(ii,j))*X(ii,j) + ...
+                        phis{num}.two(phind(ii,j))*X(ii,j)^2 + phis{num}.three(phind(ii,j))*X(ii,j)^3);
                 elseif derp == 1
-                    phi = phi*(phis{num}.one(phind(ii,j)) + 2*phis{num}.two(phind(ii,j))*X(ii,j) + 3*phis{num}.three(phind(ii,j))*X(ii,j)^2)/(range(j)/499);
+                    phi = phi*(phis{num}.one(phind(ii,j)) + 2*phis{num}.two(phind(ii,j))*X(ii,j) + ...
+                        3*phis{num}.three(phind(ii,j))*X(ii,j)^2)/(range(j)/499);
                 elseif derp == 2
                     phi = phi*(2*phis{num}.two(phind(ii,j)) + 6*phis{num}.three(phind(ii,j))*X(ii,j))/(range(j)/499)^2;
                 end
+            elseif derv(j)
+                phi = 0;
+                break;
             end
 
         end
