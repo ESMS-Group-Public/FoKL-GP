@@ -38,7 +38,8 @@ for ii=1:mx
             num = mtx(i,j);
 
             if num
-                phi = phi*(phis{num}.zero(phind(ii,j)) + phis{num}.one(phind(ii,j))*X(ii,j) + phis{num}.two(phind(ii,j))*X(ii,j)^2 + phis{num}.three(phind(ii,j))*X(ii,j)^3);
+                phi = phi*(phis{num}.zero(phind(ii,j)) + phis{num}.one(phind(ii,j))*X(ii,j) + ...
+                    phis{num}.two(phind(ii,j))*X(ii,j)^2 + phis{num}.three(phind(ii,j))*X(ii,j)^3);
             end
 
         end

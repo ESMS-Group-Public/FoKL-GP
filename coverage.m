@@ -1,5 +1,8 @@
 
-function [meen, bounds, rmse] = coverage(betas, normputs, data, phis, mtx, draws, plots)
+function [meen, bounds, rmse] = coverage(betas, normputs, ranges, modparams, data, mtx, chimod, draws, plots)
+
+A = readmatrix('spline_coefficient_500.txt');
+phis = splineconvert500(A);
 
 [m, mbets] = size(betas);
 
@@ -15,32 +18,39 @@ while (1)
     end
 end
 
-X = zeros(n, mbets);
+if isequal(chimod,'standard')
+    X = zeros(n, mbets); % number of data points by number of terms in the function
 
-for i=1:n
+    for i=1:n
 
-    phind = ceil(normputs(i,:)*499);
-    phind = phind + (phind == 0);
+        phind = ceil(normputs(i,:)*499);
+        phind = phind + (phind == 0);
 
-    for j=2:mbets
+        for j=1:mbets-1
 
-        phi = 1;
-        for k=1:mputs
+            phi = 1;
+            for k=1:mputs
 
-            num = mtx(j-1,k);
+                num = mtx(j,k);
 
-            if num
-                x = 499*normputs(i,k) - phind(k) + 1;
-                phi = phi*(phis{num}.zero(phind(k)) + phis{num}.one(phind(k))*x + phis{num}.two(phind(k))*x^2 + phis{num}.three(phind(k))*x^3);
+                if num
+                    x = 499*obj.normputs(i,k) - phind(k) + 1;
+                    phi = phi*(phis{num}.zero(phind(k)) + phis{num}.one(phind(k))*x + phis{num}.two(phind(k))*x^2 + phis{num}.three(phind(k))*x^3);
+                end
             end
+
+            X(i,j+1) = phi;
+
         end
-
-        X(i,j) = phi;
-
     end
+    X(:,1) = ones(n,1);
+elseif isequal(chimod, 'standardC')
+    mh = mexhost;
+    X = feval(mh, 'chimatrix_eval', normputs, mtx);
+else
+    X = feval(chimod, normputs, ranges, modparams, phis, mtx);
 end
 
-X(:,1) = ones(n,1);
 
 modells = zeros(length(data), draws);
 for i=1:draws
