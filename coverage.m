@@ -34,7 +34,7 @@ if isequal(chimod,'standard')
                 num = mtx(j,k);
 
                 if num
-                    x = 499*obj.normputs(i,k) - phind(k) + 1;
+                    x = 499*normputs(i,k) - phind(k) + 1;
                     phi = phi*(phis{num}.zero(phind(k)) + phis{num}.one(phind(k))*x + phis{num}.two(phind(k))*x^2 + phis{num}.three(phind(k))*x^3);
                 end
             end

@@ -37,29 +37,44 @@ function [betas, mtx, evs] = emulator(inputs_in, data, stdev, varargin)
 % model once adding terms starts to show diminishing returns. a good
 % default is 3 -- large datasets could benefit from higher values
 
-% 'draws' is the total number of draws from the posterior for each tested 
+% 'draws' is the total number of draws from the posterior for each tested.
+% default 2000
 
 % 'gimmie' is a boolean causing the routine to return the most complex
-% model tried instead of the model with the optimum bic
+% model tried instead of the model with the optimum bic. default false
 
-% 'way3' is a boolean for turning on or off 3-way interactions
+% 'way3' is a boolean for turning on or off 3-way interactions. default
+% false
 
 % 'threshav' is a threshold for proposing terms for elimination based on
-% their mean values (larger thresholds lead to more elimination)
+% their mean values (larger thresholds lead to more elimination). default
+% 0.01
 
 % 'threshstda' is a threshold standard deviation -- expressed as a fraction 
 % relative to the mean -- that pairs with 'threshav'.
 % terms with coefficients that are lower than 'threshav' and standard deviations higher than
 % 'threshstda' will be proposed for elimination (elimination will happen or not 
-% based on relative BIC values)
+% based on relative BIC values). default 0.5
 
 % 'threshstdb' is a threshold standard deviation that is independent of the
 % mean value of the coefficient -- all with a standard deviation (fraction 
-% relative to mean) exceeding
-% this value will be proposed for elimination
+% relative to mean) exceeding this value will be proposed for elimination.
+% default 2
 
 % 'aic' is a boolean specifying the use of the aikaike information
-% criterion
+% criterion. default false
+
+% 'chimod' is the handle for a function that generates the chi matrix for
+% the linear model. default 'standard'
+
+% 'basis' is a filename for a set of basis functions. default
+% 'spline_coefficient_500.txt'
+
+% 'modparams' is a vector of parameters that will be passed to the model
+% specified in 'chimod'. default []
+
+% 'sparsity' is the max number of model terms. default is the total number
+% of instances
 
 % function outputs:
 
@@ -106,6 +121,7 @@ aic = false;
 chimod = 'standard';
 basis = 'spline_coefficient_500.txt';
 modparams = [];
+sparsity = length(data);
 
 if mod(length(varargin),2)
     error('emulator: argument list invalid. list options like ''optional argument'', value');
@@ -191,6 +207,11 @@ for i=1:2:length(varargin)
             end
         case 'modparams'
             modparams = varargin{i+1};
+        case 'sparsity'
+            sparsity = varargin{i+1};
+            if ~isscalar(sparsity) || sparsity <= 0
+                error('emulator: ''sparsity'' is a positive scalar')
+            end
         otherwise
             if ischar(varargin{i})
                 error(['emulator: optional variable not recognized: ' varargin{i}]);
@@ -318,7 +339,7 @@ while 1
         
         damtx = [damtx; vecs];
         [dam, ~] = size(damtx);
-        if dam >= n
+        if dam >= sparsity
             finished = 1;
             break;
         end

@@ -15,11 +15,11 @@ The multiple-input, single-output GP functions are constructed through an automa
 
 There is a test case in the MATLAB workspace in the folder. Load the workspace and run 'emulator' with
 
-[betas, mtx, evs] = emulator([reshape(X, m*n,1) reshape(Y, m*n, 1)], reshape(DATA_nois, m*n, 1), phi, [], 9, 0.01, 3, 4000, 4, 2000, 0, 0, 0.01, 0.5, 2, 1);
+[betas, mtx, evs] = emulator([reshape(X, m*n,1) reshape(Y, m*n, 1)], reshape(DATA_nois, m*n, 1), 0.01);
 
 visualize it with
 
-[meen, bounds, rmse] = coverage(betas, [reshape(X,m*n,1) reshape(Y,m*n,1)], reshape(DATA_nois,m*n,1), phi, mtx, 100, 1);
+[meen, bounds, rmse] = coverage(betas, [reshape(X,m*n,1) reshape(Y,m*n,1)], [1 1], [], reshape(DATA_nois,m*n,1), mtx, 'standard', 100, 1);
 
 Change the hyperparameters to see how various settings affect the routine.
 
