@@ -34,50 +34,67 @@ for i=1:n
     end
 end
 
+if sum(derv) == 0
+    error('bss_derivatives: must have at least one derivative. for function eval without derivatives use ''bss_eval''');
+end
+
 [mx, ~] = size(x);
 [mbet, ~] = size(betas);
 
 delta = zeros(mx,mbet);
 
-phind = ceil(x*499);
+if isstruct(phis{1})
+    bsplines = true;
+else
+    bsplines = false;
+    phind = ceil(x*499);
 
-set = (phind == 0);
-phind = phind + set;
+    set = (phind == 0);
+    phind = phind + set;
 
-r = 1/499;
-xmin = (phind-1)*r;
-X = (x-xmin)/r;
+    r = 1/499;
+    xmin = (phind-1)*r;
+    X = (x-xmin)/r;
+end
 
-for ii=1:mx
+for i=1:m
 
-    for i=1:m
+    phi = ones(mx,1);
+    for j=1:n
 
-        phi = 1;
-        for j=1:n
+        num = mtx(i,j);
 
-            num = mtx(i,j);
-
-            if num
-                derp = derv(j);
-                if derp == 0
-                    phi = phi*(phis{num}.zero(phind(ii,j)) + phis{num}.one(phind(ii,j))*X(ii,j) + ...
-                        phis{num}.two(phind(ii,j))*X(ii,j)^2 + phis{num}.three(phind(ii,j))*X(ii,j)^3);
-                elseif derp == 1
-                    phi = phi*(phis{num}.one(phind(ii,j)) + 2*phis{num}.two(phind(ii,j))*X(ii,j) + ...
-                        3*phis{num}.three(phind(ii,j))*X(ii,j)^2)/(range(j)/499);
-                elseif derp == 2
-                    phi = phi*(2*phis{num}.two(phind(ii,j)) + 6*phis{num}.three(phind(ii,j))*X(ii,j))/(range(j)/499)^2;
+        if num
+            derp = derv(j);
+            if derp == 0
+                if bsplines
+                    phi = phi.*fnval(phis{num},x(:,j));
+                else
+                    phi = phi.*(phis{num}.zero(phind(:,j)) + phis{num}.one(phind(:,j)).*X(:,j) + ...
+                        phis{num}.two(phind(:,j))*X(ii,j).^2 + phis{num}.three(phind(:,j)).*X(:,j).^3);
                 end
-            elseif derv(j)
-                phi = 0;
-                break;
+            elseif derp == 1
+                if bsplines
+                    phi = phi.*fnval(phis{num+500},x(:,j))/range(j);
+                else
+                    phi = phi.*(phis{num}.one(phind(:,j)) + 2*phis{num}.two(phind(:,j)).*X(:,j) + ...
+                        3*phis{num}.three(phind(:,j)).*X(:,j).^2)./(range(j)/499);
+                end
+            elseif derp == 2
+                if bsplines
+                    phi = phi.*fnval(phis{num+1000},x(:,j))/range(j)^2;
+                else
+                    phi = phi.*(2*phis{num}.two(phind(:,j)) + 6*phis{num}.three(phind(:,j)).*X(ii,j))/(range(j)/499)^2;
+                end
             end
-
+        elseif derv(j)
+            phi = zeros(mx,1);
+            break;
         end
 
-        delta(ii,:) = delta(ii,:) + phi*betas(:,i+1)';
-
     end
+
+    delta = delta + repmat(phi,1,mbet).*repmat(betas(:,i+1)',mx,1);
 
 end
 
